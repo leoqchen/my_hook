@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 typedef long (*syscall_fn_t)(long, long, long, long, long, long, long);
@@ -16,9 +17,14 @@ static unsigned int systemCallCount = 0;
 #define WHT   "\x1B[37m"
 #define RESET "\x1B[0m"
 
+static void onExit(void)
+{
+    printf("syscall count: %d\n", systemCallCount);
+}
+
 static long hook_function(long a1, long a2, long a3,
-			  long a4, long a5, long a6,
-			  long a7)
+                          long a4, long a5, long a6,
+                          long a7)
 {
     systemCallCount++;
 
@@ -29,16 +35,17 @@ static long hook_function(long a1, long a2, long a3,
         printf(YEL "hook: %5u, syscall %3ld \"%s\"\n" RESET, systemCallCount, a1, syscall_name(a1));
     }
 
-	return next_sys_call(a1, a2, a3, a4, a5, a6, a7);
+    return next_sys_call(a1, a2, a3, a4, a5, a6, a7);
 }
 
 int __hook_init(long placeholder __attribute__((unused)),
-		void *sys_call_hook_ptr)
+                void *sys_call_hook_ptr)
 {
-	printf(YEL "__hook_init: we can do some init work here\n" RESET);
+    printf(YEL "__hook_init: we can do some init work here\n" RESET);
+    atexit( onExit );
 
-	next_sys_call = *((syscall_fn_t *) sys_call_hook_ptr);
-	*((syscall_fn_t *) sys_call_hook_ptr) = hook_function;
+    next_sys_call = *((syscall_fn_t *) sys_call_hook_ptr);
+    *((syscall_fn_t *) sys_call_hook_ptr) = hook_function;
 
-	return 0;
+    return 0;
 }
