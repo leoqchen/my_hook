@@ -53,6 +53,7 @@ static long hook_function(long a1, long a2, long a3,
     return ret;
 }
 
+extern "C"
 int __hook_init(long placeholder __attribute__((unused)),
                 void *sys_call_hook_ptr)
 {
