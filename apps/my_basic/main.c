@@ -8,6 +8,7 @@ static syscall_fn_t next_sys_call = NULL;
 static unsigned int systemCallCount = 0;
 
 #include "syscall_64.inl"
+
 #define RED   "\x1B[31m"
 #define GRN   "\x1B[32m"
 #define YEL   "\x1B[33m"
@@ -28,11 +29,24 @@ static long hook_function(long a1, long a2, long a3,
 {
     systemCallCount++;
 
-    if( a1 == 16 ){ // ioctl
-        printf(YEL "hook: %5u, syscall %3ld \"%s( fd=%ld, request=%ld, arg=%ld )\"\n" RESET, systemCallCount, a1,
-               syscall_name(a1), a2, a3, a4);
-    }else{
-        printf(YEL "hook: %5u, syscall %3ld \"%s\"\n" RESET, systemCallCount, a1, syscall_name(a1));
+    const char* name = syscall_name(a1);
+    switch( a1 ){
+        case 2: // open
+            printf(YEL "hook: %5u, syscall %3ld \"%s( pathname=%s, flags=0x%lx, mode=0x%lx )\"\n" RESET, systemCallCount, a1, name, (const char*)a2, a3, a4);
+            break;
+
+        case 16: // ioctl
+            printf(YEL "hook: %5u, syscall %3ld \"%s( fd=%ld, request=%ld, arg=%ld )\"\n" RESET, systemCallCount, a1,
+                   name, a2, a3, a4);
+            break;
+
+        case 257: // openat
+            printf(YEL "hook: %5u, syscall %3ld \"%s( dirfd=0x%lx, pathname=%s, flags=0x%lx, mode=0x%lx )\"\n" RESET, systemCallCount, a1, name, a2, (const char*)a3, a4, a5);
+            break;
+
+        default:
+            printf(YEL "hook: %5u, syscall %3ld \"%s\"\n" RESET, systemCallCount, a1, name);
+            break;
     }
 
     return next_sys_call(a1, a2, a3, a4, a5, a6, a7);
