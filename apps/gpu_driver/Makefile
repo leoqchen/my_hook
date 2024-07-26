@@ -7,7 +7,7 @@ CLEANFILES = $(PROGS) *.o *.d
 SRCDIR ?= ./
 
 NO_MAN=
-CXXFLAGS = -O3 -pipe
+CXXFLAGS = -O3 -pipe -std=c++2a -g
 CXXFLAGS += -Werror -Wall -Wunused-function
 CXXFLAGS += -Wextra
 CXXFLAGS += -shared -fPIC
