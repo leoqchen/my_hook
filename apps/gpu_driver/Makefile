@@ -8,7 +8,7 @@ SRCDIR ?= ./
 
 NO_MAN=
 CXXFLAGS = -O3 -pipe -std=c++2a -g
-CXXFLAGS += -Werror -Wall -Wunused-function
+CXXFLAGS += -Werror -Wall -Wno-unused-function
 CXXFLAGS += -Wextra
 CXXFLAGS += -shared -fPIC
 
