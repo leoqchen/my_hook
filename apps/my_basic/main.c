@@ -38,18 +38,27 @@ static long hook_function(long a1, long a2, long a3,
                           long a4, long a5, long a6,
                           long a7)
 {
+    char path[128];
+    switch( a1 ){
+        case 3: // close
+            getPathFromFileDescriptor( a2, path, sizeof(path) );
+            break;
+
+        default:
+            break;
+    }
+
     long ret = next_sys_call(a1, a2, a3, a4, a5, a6, a7);
 
     systemCallCount++;
     const char* name = syscall_name(a1);
-    char path[128];
     switch( a1 ){
         case 2: // open
             printf(YEL "hook: %5u, syscall %3ld \"%s( pathname=%s, flags=0x%lx, mode=0x%lx ), return fd=%ld\"\n" RESET, systemCallCount, a1, name, (const char*)a2, a3, a4, ret);
             break;
 
         case 3: // close
-            printf(YEL "hook: %5u, syscall %3ld \"%s( fd=%ld ), return %ld\"\n" RESET, systemCallCount, a1, name, a2, ret);
+            printf(YEL "hook: %5u, syscall %3ld \"%s( fd=%ld, path=%s ), return %ld\"\n" RESET, systemCallCount, a1, name, a2, path, ret);
             break;
 
         case 16: // ioctl
@@ -59,7 +68,8 @@ static long hook_function(long a1, long a2, long a3,
             break;
 
         case 32: // dup
-            printf(YEL "hook: %5u, syscall %3ld \"%s( fd=%ld ), return %ld\"\n" RESET, systemCallCount, a1, name, a2, ret);
+            getPathFromFileDescriptor( a2, path, sizeof(path) );
+            printf(YEL "hook: %5u, syscall %3ld \"%s( fd=%ld, path=%s ), return %ld\"\n" RESET, systemCallCount, a1, name, a2, path, ret);
             break;
 
         case 257: // openat
